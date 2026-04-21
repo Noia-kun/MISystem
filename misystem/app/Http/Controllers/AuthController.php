@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
+
+class AuthController extends Controller
+{
+    public function login(Request $request)
+    {
+        $user = DB::connection('dtr')
+            ->table('tbl_admin')
+            ->where('username', $request->username)
+            ->first();
+
+        if ($user && md5($request->password) === $user->password) {
+
+            session([
+                'logged_in' => true,
+                'admin_id' => $user->admin_id,
+                'username' => $user->username
+            ]);
+
+            return redirect($user->admin_id == 1 ? '/dashboard' : '/user-dashboard');
+        }
+
+        return redirect('/login')->with('error', 'Invalid login');
+    }
+
+    public function logout()
+    {
+        session()->flush();
+        return redirect('/login');
+    }
+}
