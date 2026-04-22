@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@yield('title', 'MIS Inventory')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     {{-- <style>
@@ -25,6 +27,11 @@
             padding: 10px 20px;
             display: block;
             text-decoration: none;
+        }
+        .sidebar .brand {
+            font-family: 'DM Serif Display', serif;
+            color: #c9a84c; /* gold */
+            font-size: 1.1rem;
         }
         .sidebar a:hover {
             background-color: #495057;
@@ -48,7 +55,7 @@
             position: fixed;
             left: 0;
             top: 0;
-            background-color: #343a40;
+            background-color: #112240;
             padding-top: 20px;
             transition: width 0.3s;
             overflow-x: hidden;
@@ -66,11 +73,24 @@
         }
         .sidebar .brand {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 60px;
-            margin-bottom: 20px;
+            height: auto;
+            padding: 16px 10px 8px 10px; /* reduce bottom padding */
+            margin-bottom: 8px; /* reduce margin */
+            font-family: 'DM Serif Display', serif;
+            color: #c9a84c;
+            font-size: 0.8rem;
+            text-align: center;
+            line-height: 1.4;
         }
+
+        .logo-hover { display: none; }
+        .logo-default { display: block; }
+
+        .sidebar:hover .logo-default { display: none; }
+        .sidebar:hover .logo-hover { display: block; }
         .sidebar.collapsed h4,
         .sidebar.collapsed a .label {
             opacity: 0;
@@ -102,8 +122,8 @@
             text-align: center;
             margin-right: 10px;
         }
-        .sidebar a:hover {
-            background-color: #495057;
+        .sidebar a:hover {                    
+            background-color: #1a3a6b;
         }
         .content {
             margin-left: 250px;
@@ -124,30 +144,40 @@
 <!-- Sidebar -->
 <div class="sidebar collapsed d-flex flex-column justify-content-between">
     <div>
-        <h4 class="brand text-white"><span class="label"> MIS Office System </span></h4>
+        <div class="brand">
+            <img class="logo-default" src="http://localhost/dtr/logo.png" 
+                alt="Logo" style="height:35px; width:auto; object-fit:contain;">
+            <img class="logo-hover" src="http://localhost/dtr/Web Logo(White).png" 
+                alt="Logo" style="height:auto; width:180px; object-fit:contain; margin-bottom:8px;">
+            <span class="label">MIS Inventory Management System</span>
+        </div>
         <a href="{{ url('/dashboard') }}">
-            <span class="icon">🏠</span>
+            <span class="icon"><i class="fa fa-house"></i></span>
             <span class="label">Dashboard</span>
         </a>
         <a href="{{ route('inventoryitems') }}">
-            <span class="icon">📦</span>
+            <span class="icon"><i class="fa fa-box"></i></span>
             <span class="label">Lent Items</span>
         </a>
         <a href="{{ route('officeinventory') }}">
-            <span class="icon">🔨</span>
+            <span class="icon"><i class="fa fa-screwdriver-wrench"></i></span>
             <span class="label">Inventory Items</span>
         </a>
         <a class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#roomSchedulerMenu" role="button" aria-expanded="false" aria-controls="roomSchedulerMenu">
-            <span class="icon">🏫</span>
+            <span class="icon"><i class="fa fa-school"></i></span>
             <span class="label">Room Scheduler</span>
             <i class="fa fa-caret-down ms-auto"></i>
         </a>
             <div class="collapse ms-3" id="roomSchedulerMenu">
-                <a href="{{ route('roomscheduler.index') }}">📝 Book a Room</a>
-                <a href="{{ route('rooms.management') }}">🚪 Room Management</a>
+                <a href="{{ route('roomscheduler.index') }}">
+                    <span class="icon"><i class="fa fa-book"></i></span> Book a Room
+                </a>
+                <a href="{{ route('rooms.management') }}">
+                    <span class="icon"><i class="fa fa-door-open"></i></span> Room Management
+                </a>
             </div>
         <a href="{{ route('backlogs.index') }}">
-        <span class="icon">📚</span>
+        <span class="icon"><i class="fa fa-clock-rotate-left"></i></span>
         <span class="label"> Back Logs</span>
         </a>
     </div>
