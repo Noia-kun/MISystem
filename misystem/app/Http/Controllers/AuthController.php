@@ -14,12 +14,12 @@ class AuthController extends Controller
             ->table('tbl_admin')
             ->where('username', $request->username)
             ->first();
-
-        if ($user && md5($request->password) === $user->password) {
-
+        
+        // if ($user && md5($request->password) === $user->password) {
+        if ($user && strtolower($user->password) === strtolower(md5($request->password))) {
             session([
                 'logged_in' => true,
-                'admin_id' => $user->admin_id,
+                'admin_id' => (int) $user->admin_id,
                 'username' => $user->username
             ]);
 

@@ -33,12 +33,12 @@ Route::get('/login', function () {
 
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::get('/logout', [AuthController::class, 'logout']);
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::get('/logout', function () {
-    session()->flush(); // clears all session data
-    return redirect('/login'); // redirect back to login page
-})->name('logout');
+// Route::get('/logout', function () {
+//     session()->flush(); // clears all session data
+//     return redirect('/login'); // redirect back to login page
+// })->name('logout');
 
 Route::get('/dashboard', function () {
 
