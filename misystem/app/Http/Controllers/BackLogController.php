@@ -14,7 +14,9 @@ class BackLogController extends Controller
         $requests = RequestLog::latest()->get();
         $borrows = BorrowLog::latest()->get();
         $roomLogs = RoomSchedule::latest()->get();
-
+        if (!session('logged_in') || session('admin_id') != 1) {
+            return redirect('/login');
+        }
         return view('items.backlogs', compact('requests', 'borrows', 'roomLogs'));
     }
 }

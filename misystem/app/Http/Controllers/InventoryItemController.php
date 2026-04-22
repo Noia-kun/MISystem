@@ -11,6 +11,9 @@ class InventoryItemController extends Controller{
     // Show all inventory items
     public function index(){
         $items = InventoryItem::all();
+        if (!session('logged_in') || session('admin_id') != 1) {
+            return redirect('/login');
+        }
         return view('items.inventoryitems', compact('items'));
     }
 

@@ -24,6 +24,9 @@ class RoomSchedulerController extends Controller
             ->get();
         
         $rooms = Room::all();
+        if (!session('logged_in') || session('admin_id') != 1) {
+            return redirect('/login');
+        }
         return view('items.roomscheduler', compact('roomSchedules', 'roomLogs', 'rooms'));
     }
     public function store(Request $request)
@@ -106,7 +109,9 @@ class RoomSchedulerController extends Controller
             ->get();
         
         $rooms = Room::all();
-
+        if (!session('logged_in') || session('admin_id') != 2) {
+            return redirect('/login');
+        }
         return view('users.roomscheduler', compact('roomSchedules', 'roomLogs', 'rooms'));
     }
 

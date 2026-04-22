@@ -17,6 +17,9 @@ class MisOfficeInventoryController extends Controller
         $items = MisOfficeInventory::with(['locationHistories', 'usableNotesHistories'])
             ->orderBy('created_at', 'desc')
             ->get();
+        if (!session('logged_in') || session('admin_id') != 1) {
+            return redirect('/login');
+        }
         return view('items.misofficeinventory', compact('items'));
     }
 

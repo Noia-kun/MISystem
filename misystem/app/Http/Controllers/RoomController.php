@@ -13,6 +13,9 @@ class RoomController extends Controller
     public function index()
     {
         $rooms = Room::all();
+        if (!session('logged_in') || session('admin_id') != 1) {
+            return redirect('/login');
+        }
         return view('items.manageroom', compact('rooms'));
     }
 
@@ -85,7 +88,9 @@ class RoomController extends Controller
     public function userManageroom()
     {
         $rooms = Room::all();
-
+        if (!session('logged_in') || session('admin_id') != 2) {
+            return redirect('/login');
+        }
         return view('users.manageroom', compact('rooms'));
     }
 
