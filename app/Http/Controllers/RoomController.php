@@ -12,7 +12,7 @@ class RoomController extends Controller
      */
     public function index()
     {
-        $rooms = Room::all();
+        $rooms = Room::paginate(10);
         if (!session('logged_in') || session('admin_id') != 1) {
             return redirect('/login');
         }
@@ -87,7 +87,7 @@ class RoomController extends Controller
     }
     public function userManageroom()
     {
-        $rooms = Room::all();
+        $rooms = Room::paginate(10);
         if (!session('logged_in') || session('admin_id') != 2) {
             return redirect('/login');
         }

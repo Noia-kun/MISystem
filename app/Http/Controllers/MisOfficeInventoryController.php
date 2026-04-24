@@ -16,7 +16,7 @@ class MisOfficeInventoryController extends Controller
         //$items = MisOfficeInventory::all();
         $items = MisOfficeInventory::with(['locationHistories', 'usableNotesHistories'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10);
         if (!session('logged_in') || session('admin_id') != 1) {
             return redirect('/login');
         }

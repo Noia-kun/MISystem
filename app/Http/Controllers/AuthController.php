@@ -26,7 +26,7 @@ class AuthController extends Controller
             return redirect($user->admin_id == 1 ? '/dashboard' : '/user-dashboard');
         }
 
-        return redirect('/login')->with('error', 'Invalid login');
+        return redirect('/login')->with('error', 'Invalid login. Wrong username or password.');
     }
 
     public function logout()

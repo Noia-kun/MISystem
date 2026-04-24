@@ -47,7 +47,7 @@ Route::get('/dashboard', function () {
     }
 
     return app(\App\Http\Controllers\DashboardController::class)->index();
-});
+})->name('dashboard');
 
 Route::get('/user-dashboard', function () {
 
@@ -56,7 +56,7 @@ Route::get('/user-dashboard', function () {
     }
 
     return app(\App\Http\Controllers\UserDashboardController::class)->index();
-});
+})->name('user-dashboard');
 
 // Route::get('/viewbookings', [PublicViewingController::class, 'viewBookings'])->name('view.bookings');
 

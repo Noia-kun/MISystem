@@ -90,11 +90,15 @@ php artisan migrate
 
 php artisan serve
 
+---
+
 🧪 Usage
 
 - Access the System Access Panel for employee navigation
 - Login as Admin to manage inventory and requests
 - Use Room Scheduler for booking and approvals
+
+---
 
 📌 Versioning
 
@@ -107,6 +111,8 @@ Example:
 v1.0.0 Initial release
 v1.1.0 New features
 v1.1.1 Bug fixes
+
+---
 
 👨‍💻 Developer
 

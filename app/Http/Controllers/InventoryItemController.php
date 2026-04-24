@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class InventoryItemController extends Controller{
     // Show all inventory items
     public function index(){
-        $items = InventoryItem::all();
+        $items = InventoryItem::paginate(10);
         if (!session('logged_in') || session('admin_id') != 1) {
             return redirect('/login');
         }
