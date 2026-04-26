@@ -373,7 +373,10 @@
 
             
         @else
-            <p class="text-muted">No scheduled rooms found.</p>
+            <div class="empty-state">
+                <i class="fa fa-calendar-xmark fa-2x mb-2 d-block"></i>
+                No scheduled rooms found.
+            </div>
         @endif
     </div>
 </div>
@@ -422,7 +425,7 @@
         @else
             <div class="empty-state">
                 <i class="fa fa-calendar-xmark fa-2x mb-2 d-block"></i>
-                No scheduled rooms found.
+                No room schedule logs found.
             </div>
         @endif
     </div>

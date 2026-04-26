@@ -92,7 +92,7 @@ php artisan serve
 
 ---
 
-🧪 Usage
+## 🧪 Usage
 
 - Access the System Access Panel for employee navigation
 - Login as Admin to manage inventory and requests
@@ -100,7 +100,7 @@ php artisan serve
 
 ---
 
-📌 Versioning
+## 📌 Versioning
 
 This project follows semantic versioning:
 
@@ -114,10 +114,10 @@ v1.1.1 Bug fixes
 
 ---
 
-👨‍💻 Developer
+## 👨‍💻 Developer
 
 Developed by: RR
 
-📄 License
+## 📄 License
 
 This project is for internal organizational use of CDBS. All rights reserved.

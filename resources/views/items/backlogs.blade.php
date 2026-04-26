@@ -165,13 +165,13 @@
         body * { visibility: hidden; }
         #printArea, #printArea * { visibility: visible; }
         #printArea {
-            position: fixed;
+            position: absolute;
             top: 0; left: 0;
             width: 100%;
             font-family: 'DM Sans', sans-serif;
             font-size: 11px;
         }
-
+        
         .print-header {
             text-align: center;
             margin-bottom: 20px;
