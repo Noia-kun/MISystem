@@ -20,6 +20,7 @@ Route::get('/', function () {
 });
 
 Route::get('/roomschedules', [PublicviewingController::class, 'viewBookings'])->name('home');
+Route::post('/roomschedules', [RoomSchedulerController::class, 'publicStore'])->name('public.roomscheduler.store');
 
 Route::get('/roomschedules2', [PublicviewingController::class, 'viewBookings2'])->name('home2');
 

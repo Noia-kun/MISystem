@@ -170,4 +170,60 @@ class RoomSchedulerController extends Controller
 
         return redirect()->route('user.roomscheduler')->with('success', 'Room booking removed successfully.');
     }
+    public function publicRoomscheduler()
+    {
+        $roomSchedules = RoomSchedule::whereNotNull('approved_at')
+            ->orderBy('scheduled_at')
+            ->get();
+
+        $roomLogs = RoomSchedule::whereNotNull('approved_at')
+            ->orderByDesc('scheduled_at')
+            ->get();
+
+        $rooms = Room::all();
+
+        // No session check — public access
+        return view('viewbookings', compact('roomSchedules', 'roomLogs', 'rooms'));
+    }
+
+    public function publicStore(Request $request)
+    {
+        $conflict = RequestLog::where('request_type', 'Room Scheduling')
+            ->where('location', $request->room_name)
+            ->where('borrowed_at', $request->scheduled_at)
+            ->whereIn('status', ['Pending', 'Approved'])
+            ->where(function ($query) use ($request) {
+                $query->whereBetween('time_from', [$request->time_from, $request->time_to])
+                    ->orWhereBetween('time_to', [$request->time_from, $request->time_to])
+                    ->orWhere(function ($query2) use ($request) {
+                        $query2->where('time_from', '<=', $request->time_from)
+                            ->where('time_to', '>=', $request->time_to);
+                    });
+            })
+            ->exists();
+
+        if ($conflict) {
+            return redirect()->back()
+                ->withErrors(['conflict' => '⚠️ The room selected is already requested for the selected date and time.'])
+                ->withInput();
+        }
+
+        RequestLog::create([
+            'request_type' => 'Room Scheduling',
+            'item_name' => 'Room',
+            'inventory_item_id' => null,
+            'requester_name' => $request->requester_name,
+            'location' => $request->room_name,
+            'reason' => $request->purpose,
+            'material' => $request->material,
+            'borrowed_at' => $request->scheduled_at,
+            'time_from' => $request->time_from,
+            'time_to' => $request->time_to,
+            'level' => $request->level,
+            'department' => $request->department,
+            'status' => 'Pending',
+        ]);
+
+        return redirect()->route('home')->with('success', 'Room request submitted successfully!');
+    }
 }

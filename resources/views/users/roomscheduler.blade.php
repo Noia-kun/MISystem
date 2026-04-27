@@ -209,75 +209,6 @@
     /* Empty state */
     .empty-state { text-align: center; padding: 30px; color: var(--muted); font-size: 0.9rem; }
 
-    /* ===== PRINT STYLES ===== */
-    @media print {
-        body * { visibility: hidden; }
-        #printArea, #printArea * { visibility: visible; }
-        #printArea {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 11px;
-        }
-
-        .print-header {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #0a1628;
-            padding-bottom: 10px;
-        }
-
-        .print-header h2 {
-            font-size: 18px;
-            color: #0a1628;
-            margin: 0;
-        }
-
-        .print-header p {
-            font-size: 11px;
-            color: #555;
-            margin: 4px 0 0;
-        }
-
-        .print-section-title {
-            font-size: 13px;
-            font-weight: bold;
-            margin: 20px 0 8px;
-            color: #0a1628;
-            border-left: 4px solid #c9a84c;
-            padding-left: 8px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            font-size: 10px;
-        }
-
-        table thead th {
-            background: #0a1628 !important;
-            color: #fff !important;
-            padding: 6px 8px;
-            text-align: left;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        table tbody td {
-            padding: 5px 8px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        table tbody tr:nth-child(even) td {
-            background: #f7fafc;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .no-print { display: none !important; }
-    }
 </style>
 
 <!-- Page Header -->
@@ -433,7 +364,7 @@
 
 
 
-    <!-- Add Room Modal -->
+<!-- Add Room Modal -->
     <div class="modal fade" id="addRoomModal" tabindex="-1" aria-labelledby="addRoomModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
