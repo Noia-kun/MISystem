@@ -11,12 +11,19 @@ class MisOfficeInventoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //$items = MisOfficeInventory::all();
+        $search = $request->input('search');
+
         $items = MisOfficeInventory::with(['locationHistories', 'usableNotesHistories'])
+            ->when($search, function($query) use ($search) {
+                $query->where('item_name', 'LIKE', "%{$search}%")
+                    ->orWhere('propertynum', 'LIKE', "%{$search}%")
+                    ->orWhere('item_set', 'LIKE', "%{$search}%");
+            })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+            
         if (!session('logged_in') || session('admin_id') != 1) {
             return redirect('/login');
         }

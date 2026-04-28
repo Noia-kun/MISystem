@@ -272,6 +272,28 @@
     </div>
 </div>
 
+<!-- Search Form -->
+<form method="GET" action="{{ route('officeinventory') }}" class="mb-4">
+    <div class="d-flex gap-2" style="max-width: 500px;">
+        <div style="position: relative; flex: 1;">
+            <input type="text" name="search" id="searchInput"
+                   class="form-control"
+                   placeholder="Search item name, property no., item set..."
+                   value="{{ request('search') }}"
+                   style="border-radius:8px; border:1px solid #e2e8f0; padding:10px 14px; padding-right:36px; font-size:0.9rem;">
+            @if(request('search'))
+                <span onclick="clearSearch()" 
+                      style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--muted);">
+                    <i class="fa fa-xmark"></i>
+                </span>
+            @endif
+        </div>
+        <button type="submit" class="btn-header gold">
+            <i class="fa fa-search"></i> Search
+        </button>
+    </div>
+</form>
+
 @if(session('success'))
     <div id="success-alert" class="alert-modern alert alert-success">
         <i class="fa fa-circle-check me-2"></i>{{ session('success') }}
@@ -341,7 +363,7 @@
                     </tbody>
                 </table>
             <div class="d-flex justify-content-end mt-3">
-                {{ $items->links() }}
+                {{ $items->appends(request()->query())->links() }}
             </div>
         @else
             <div class="empty-state">
@@ -616,6 +638,11 @@
             toggle();
         });
     });
+
+    // Clear search results
+    function clearSearch() {
+        window.location.href = "{{ route('officeinventory') }}";
+    }
 </script>
 
 @endsection
