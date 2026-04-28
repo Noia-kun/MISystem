@@ -238,7 +238,7 @@
     </div>
         <div class="dash-card-body">
             @if($pendingRequests->count())
-                <div class="table-scroll" style="max-height: 500px;">
+                <div class="table-scroll" style="max-height: 250px;">
                     <table class="modern-table">
                         <thead>
                             <tr>
@@ -282,7 +282,7 @@
         </div>
         <div class="dash-card-body">
             @if($roomSchedules->count())
-                <div class="table-scroll" style="max-height: 500px;">
+                <div class="table-scroll" style="max-height: 250px;">
                     <table class="modern-table">
                         <thead>
                             <tr>
