@@ -345,7 +345,7 @@
             <h2 class="access-title">Where to next?</h2>
             <p class="access-subtitle">Select a system to continue.</p>
 
-            <a href="http://localhost/dtr/employee" class="btn-access btn-access-primary">
+            <a href="http://192.168.20.11/dtr/employee" class="btn-access btn-access-primary">
                 <span class="btn-icon"><i class="bi bi-clock"></i></span>
                 <span class="btn-text-wrap">
                     <span class="btn-label">DTR Employee System</span>

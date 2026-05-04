@@ -125,7 +125,7 @@
     <!-- Footer -->
     <footer class="text-center text-muted">
         <hr>
-        <small>Developed by RR &copy; {{ date('Y') }} MIS Office Management System. All rights reserved.</small>
+        <small>Developed by RR &copy; {{ date('Y') }} MIS Office Information Management System. All rights reserved.</small>
         <small>Version {{ config('app.version') }}</small>
     </footer>
 </div>

@@ -143,7 +143,7 @@
                 alt="Logo" style="height:35px; width:auto; object-fit:contain;">
             <img class="logo-hover" src="http://localhost/dtr/Web Logo(White).png" 
                 alt="Logo" style="height:auto; width:180px; object-fit:contain; margin-bottom:8px;">
-            <span class="label">MIS Inventory Management System</span>
+            <span class="label">MIS Information Management System</span>
         </div>
         <a href="{{ url('/user-dashboard') }}">
         <span class="icon"><i class="fa fa-house"></i></span>
@@ -178,7 +178,7 @@
     <!-- Footer -->
     <footer class="text-center text-muted">
         <hr>
-        <small>Developed by RR &copy; {{ date('Y') }} MIS Office Management System. All rights reserved.</small>
+        <small>Developed by RR &copy; {{ date('Y') }} MIS Office Information Management System. All rights reserved.</small>
         <small>Version {{ config('app.version') }}</small>
     </footer>
 </div>

@@ -267,7 +267,7 @@
         <div class="brand-tag">MIS Office System</div>
 
         <h1 class="left-heading">
-            Inventory<br>
+            Information<br>
             <span>Management</span><br>
             System
         </h1>
