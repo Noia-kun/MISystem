@@ -359,12 +359,26 @@
                                 </ul>
                             </div>
                         @endif
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="time_from" class="form-label">Time From</label>
+                                <input type="time" name="time_from" id="time_from" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="time_to" class="form-label">Time To</label>
+                                <input type="time" name="time_to" id="time_to" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="scheduled_at" class="form-label">Schedule Date</label>
+                            <input type="date" name="scheduled_at" id="scheduled_at" class="form-control" required>
+                        </div>
                         <div class="mb-3">
                             <label for="room_name" class="form-label">Select Room</label>
                             <select name="room_name" id="room_name" class="form-select" required>
                                 <option value="">-- Choose a room --</option>
                                 @foreach($rooms as $room)
-                                    <option value="{{ $room->room_name }}" {{ $room->status === 'Unavailable' ? 'disabled' : '' }}>
+                                    <option value="{{ $room->room_name }}" data-original-text="{{ $room->room_name }} - {{ $room->room_location }}" {{ $room->status === 'Unavailable' ? 'disabled' : '' }}>
                                         {{ $room->room_name }} - {{ $room->room_location }} {{ $room->status === 'Unavailable' ? '(Unavailable)' : '' }}
                                     </option>
                                 @endforeach
@@ -389,20 +403,6 @@
                         <div class="mb-3">
                             <label for="material" class="form-label">Materials Needed</label>
                             <input type="text" name="material" class="form-control" placeholder="e.g. Projector, Whiteboard">
-                        </div>
-                        <div class="mb-3">
-                            <label for="scheduled_at" class="form-label">Schedule Date</label>
-                            <input type="date" name="scheduled_at" class="form-control" required>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="time_from" class="form-label">Time From</label>
-                                <input type="time" name="time_from" class="form-control" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="time_to" class="form-label">Time To</label>
-                                <input type="time" name="time_to" class="form-control" required>
-                            </div>
                         </div>
                     </div>
 
@@ -433,5 +433,37 @@
             }
         }, 2000);
         
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $('#time_from, #time_to, #scheduled_at').on('change', function() {
+        const time_from    = $('#time_from').val();
+        const time_to      = $('#time_to').val();
+        const scheduled_at = $('#scheduled_at').val();
+
+        // Only fire if all 3 are filled
+        if (!time_from || !time_to || !scheduled_at) return;
+
+        $.ajax({
+            url: '{{ route("public.check.rooms") }}',
+            type: 'GET',
+            data: { time_from, time_to, scheduled_at },
+            success: function(unavailable) {
+                $('#room_name option').each(function() {
+                    const val  = $(this).val();
+                    const text = $(this).data('original-text') || $(this).text();
+
+                    // Save original text first time
+                    $(this).data('original-text', text);
+
+                    if (unavailable.includes(val)) {
+                        $(this).prop('disabled', true).text(text + ' (Unavailable)');
+                    } else {
+                        $(this).prop('disabled', false).text(text);
+                    }
+                });
+            }
+        });
+    });
     </script>
 @endsection

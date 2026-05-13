@@ -1,10 +1,10 @@
-# 🏢 MISystem – MIS Office Inventory Management System
+# 🏢 MISystem – MIS Office Information Management System
 
-MISystem is a web-based system built with Laravel designed to streamline office operations such as inventory management, room reservations, and employee system access.
+MISystem is a web-based system built with Laravel designed to streamline office operations such as inventory management, room reservations, and employee system access. This system also connected to an existing old system "DTR Attendance System".
 
 It is divided into two main parts:
-1. System Access Panel (for employees)
-2. Admin Inventory Management System (for administrators)
+1. System Access Panel (for employees) 
+2. Admin Information Management System (for administrators)
 
 ---
 
@@ -17,7 +17,7 @@ Provides quick access to:
 
 ---
 
-### 🛠️ Admin System (Inventory Management)
+### 🛠️ Admin System (Information Management)
 
 #### 👨‍💻 Main Admin (MIS Office / IT)
 Full system control with access to:
