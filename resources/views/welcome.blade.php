@@ -261,7 +261,7 @@
 
         <!-- Logo at top -->
         <div class="logo-wrap">
-            <img src="http://localhost/dtr/Web Logo(White).png" alt="Company Logo">
+            <img src="../dtr/Web Logo(White).png" alt="Company Logo">
         </div>
         
         <div class="brand-tag">MIS Office System</div>
