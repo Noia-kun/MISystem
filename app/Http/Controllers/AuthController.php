@@ -23,7 +23,13 @@ class AuthController extends Controller
                 'username' => $user->username
             ]);
 
-            return redirect($user->admin_id == 1 ? '/dashboard' : '/user-dashboard');
+            return redirect(match((int) $user->admin_id) {
+                1       => '/dashboard',
+                2       => '/user-dashboard',
+                3       => '/admin-dashboard',
+                4       => '/admin-dashboard2',
+                default => '/dashboard',
+            });
         }
 
         return redirect('/login')->with('error', 'Invalid login. Wrong username or password.');

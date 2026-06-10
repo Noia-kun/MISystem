@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminDashboard2Controller;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\RequestController;
@@ -59,6 +61,24 @@ Route::get('/user-dashboard', function () {
 
     return app(\App\Http\Controllers\UserDashboardController::class)->index();
 })->name('user-dashboard');
+
+Route::get('/admin-dashboard', function () {
+
+    if (!session('logged_in') || session('admin_id') != 3) {
+        return redirect('/login');
+    }
+
+    return app(\App\Http\Controllers\AdminDashboardController::class)->index();
+})->name('admin-dashboard');
+
+Route::get('/admin-dashboard2', function () {
+
+    if (!session('logged_in') || session('admin_id') != 4) {
+        return redirect('/login');
+    }
+
+    return app(\App\Http\Controllers\AdminDashboard2Controller::class)->index();
+})->name('admin-dashboard2');
 
 // Route::get('/viewbookings', [PublicViewingController::class, 'viewBookings'])->name('view.bookings');
 
