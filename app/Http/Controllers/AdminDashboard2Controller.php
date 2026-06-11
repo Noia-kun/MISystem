@@ -26,7 +26,7 @@ class AdminDashboard2Controller extends Controller
         
         $deniedRequests = DB::connection('dtr')
             ->table('tbl_requests')
-            ->where('status', 'Denied')
+            ->where('status', 'Disapproved')
             ->count();
         
         // Get 5 most recent requests (ordered by datetime_requested)

@@ -111,7 +111,7 @@
                 alt="Logo" style="height:35px; width:auto; object-fit:contain;">
             <img class="logo-hover" src="../dtr/Web Logo(White).png" 
                 alt="Logo" style="height:auto; width:180px; object-fit:contain; margin-bottom:8px;">
-            <span class="label">MIS Information Management System</span>
+            <span class="label">Admin Portal</span>
         </div>
         <a href="{{ url('/admin-dashboard') }}">
             <span class="icon"><i class="fa fa-house"></i></span>

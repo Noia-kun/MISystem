@@ -4,10 +4,12 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminDashboard2Controller;
+use App\Http\Controllers\LeaveRequestsController;
 use App\Http\Controllers\InventoryItemController;
 use App\Http\Controllers\BorrowController;
 use App\Http\Controllers\RequestController;
@@ -16,6 +18,9 @@ use App\Http\Controllers\RoomSchedulerController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\PublicViewingController;
 use App\Http\Controllers\MisOfficeInventoryController;
+
+
+Route::get('/download-attachment/{id}', [LeaveRequestsController::class, 'downloadAttachment'])->name('download.attachment');
 
 Route::get('/', function () {
     return view('accesspanel');
@@ -80,6 +85,16 @@ Route::get('/admin-dashboard2', function () {
     return app(\App\Http\Controllers\AdminDashboard2Controller::class)->index();
 })->name('admin-dashboard2');
 
+// Leave Requests Routes (accessible by both Sister and Principal)
+Route::get('/admin-leave-requests', [App\Http\Controllers\LeaveRequestsController::class, 'index'])
+    ->name('leave-requests.index');
+Route::get('/admin-leave-requests/filter/{status}', [App\Http\Controllers\LeaveRequestsController::class, 'filterByStatus'])
+    ->name('leave-requests.filter');
+Route::patch('/admin-leave-requests/{id}/status', [App\Http\Controllers\LeaveRequestsController::class, 'updateStatus'])
+    ->name('leave-requests.update-status');
+
+
+    
 // Route::get('/viewbookings', [PublicViewingController::class, 'viewBookings'])->name('view.bookings');
 
 // Route::get('/viewbookings', function () {

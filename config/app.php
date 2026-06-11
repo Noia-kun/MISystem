@@ -64,7 +64,7 @@ return [
     |
     */
     
-    'version' => env('APP_VERSION', '1.7.5'),
+    'version' => env('APP_VERSION', '1.8.7'),
 
 
     /*
