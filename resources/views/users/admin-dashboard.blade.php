@@ -256,7 +256,7 @@
 <div class="page-header">
     <div>
         <h2 class="page-header-title">
-            <i class="fa fa-crown"></i> Sister Dashboard
+            <i class="fa fa-crown"></i> Admin Dashboard
         </h2>
         <p class="page-header-sub">Overview of leave requests and inventory</p>
     </div>
@@ -267,7 +267,7 @@
 
 <!-- Stats Cards Row -->
 <div class="row stats-row">
-    <div class="col-xl-2 col-md-4 mb-3">
+    <div class="col-xl mb-3">
         <div class="stat-card">
             <div class="stat-card-body">
                 <div class="stat-info">
@@ -281,7 +281,7 @@
         </div>
     </div>
 
-    <div class="col-xl-2 col-md-4 mb-3">
+    <div class="col-xl mb-3">
         <div class="stat-card">
             <div class="stat-card-body">
                 <div class="stat-info">
@@ -295,7 +295,7 @@
         </div>
     </div>
 
-    <div class="col-xl-2 col-md-4 mb-3">
+    <div class="col-xl mb-3">
         <div class="stat-card">
             <div class="stat-card-body">
                 <div class="stat-info">
@@ -309,7 +309,7 @@
         </div>
     </div>
 
-    <div class="col-xl-2 col-md-4 mb-3">
+    <div class="col-xl mb-3">
         <div class="stat-card">
             <div class="stat-card-body">
                 <div class="stat-info">
@@ -323,7 +323,7 @@
         </div>
     </div>
 
-    <div class="col-xl-2 col-md-4 mb-3">
+    <div class="col-xl mb-3">
         <div class="stat-card">
             <div class="stat-card-body">
                 <div class="stat-info">
@@ -395,8 +395,8 @@
                             <td>{{ $request->request_id }}</td>
                             <td>{{ $request->employee_idno }}</td>
                             <td>{{ $request->request_type }}</td>
-                            <td>{{ date('M d, h:i A', strtotime($request->datetime_start)) }}</td>
-                            <td>{{ date('M d, h:i A', strtotime($request->datetime_end)) }}</td>
+                            <td>{{ date('D, F j, Y', strtotime($request->datetime_start)) }}</td>
+                            <td>{{ date('D, F j, Y', strtotime($request->datetime_end)) }}</td>
                             <td>
                                 @if($request->request_day_type == 'Half Day')
                                     <span class="badge-modern" style="background: rgba(201,168,76,0.12); color: #b8860b;">Half Day</span>

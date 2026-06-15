@@ -325,8 +325,8 @@
                             </td>
                             <td>{{ $request->department ?? 'N/A' }}</td>
                             <td>{{ $request->request_type }}</td>
-                            <td>{{ date('M d, Y', strtotime($request->datetime_start)) }}</td>
-                            <td>{{ date('M d, Y', strtotime($request->datetime_end)) }}</td>
+                            <td>{{ date('D, M d, Y', strtotime($request->datetime_start)) }}</td>
+                            <td>{{ date('D, M d, Y', strtotime($request->datetime_end)) }}</td>
                             <td>
                                 @if($request->request_day_type == 'Half Day')
                                     <span class="badge-modern" style="background: rgba(201,168,76,0.12); color: #b8860b;">Half Day</span>
