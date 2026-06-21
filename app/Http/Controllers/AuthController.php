@@ -28,6 +28,9 @@ class AuthController extends Controller
                 2       => '/user-dashboard',
                 3       => '/admin-dashboard',
                 4       => '/admin-dashboard2',
+                5       => '/admin-leave-requests',  // AP GS
+                6       => '/admin-leave-requests',  // AP JHS
+                7       => '/admin-leave-requests',  // AP SHS
                 default => '/dashboard',
             });
         }

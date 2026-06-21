@@ -107,9 +107,9 @@
 <div class="sidebar collapsed d-flex flex-column justify-content-between">
     <div>
         <div class="brand">
-            <img class="logo-default" src="../dtr/logo.png" 
+            <img class="logo-default" src="{{ url('../dtr/logo.png') }}" 
                 alt="Logo" style="height:35px; width:auto; object-fit:contain;">
-            <img class="logo-hover" src="../dtr/Web Logo(White).png" 
+            <img class="logo-hover" src="{{ url('../dtr/Web Logo(White).png') }}" 
                 alt="Logo" style="height:auto; width:180px; object-fit:contain; margin-bottom:8px;">
             <span class="label">Admin Portal</span>
         </div>

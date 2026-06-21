@@ -10,32 +10,37 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
-        $totalRequests = DB::connection('dtr')
+        // Base query for leave requests with department join
+        $query = DB::connection('dtr')
             ->table('tbl_requests')
-            ->count();
+            ->leftJoin('tbl_employee', 'tbl_requests.employee_idno', '=', 'tbl_employee.employee_idno')
+            ->leftJoin('tbl_department', 'tbl_employee.department', '=', 'tbl_department.department_name');
         
-        $pendingRequests = DB::connection('dtr')
-            ->table('tbl_requests')
-            ->where('status', 'Pending')
-            ->count();
+        // Apply department filter for Sister (Non Academic only)
+        $filteredQuery = $query->where('tbl_department.description', 'Non Academic');
         
-        $approvedRequests = DB::connection('dtr')
-            ->table('tbl_requests')
-            ->where('status', 'Approved')
-            ->count();
+        // Get counts
+        $totalRequests = (clone $filteredQuery)->count();
+        $pendingRequests = (clone $filteredQuery)->where('tbl_requests.status', 'Pending')->count();
+        $approvedRequests = (clone $filteredQuery)->where('tbl_requests.status', 'Approved')->count();
+        $disapprovedRequests = (clone $filteredQuery)->where('tbl_requests.status', 'Disapproved')->count();
         
-        $disapprovedRequests = DB::connection('dtr')
-            ->table('tbl_requests')
-            ->where('status', 'Disapproved')
-            ->count();
-
-        $totalInventory = InventoryItem::count();
-        
-        $recentRequests = DB::connection('dtr')
-            ->table('tbl_requests')
-            ->orderBy('datetime_requested', 'desc')
+        // Get recent requests (latest 5) for the table
+        $recentRequests = (clone $filteredQuery)
+            ->select(
+                'tbl_requests.*',
+                'tbl_employee.first_name',
+                'tbl_employee.middle_name',
+                'tbl_employee.last_name',
+                'tbl_employee.department as department_name',
+                'tbl_department.description as department_description'
+            )
+            ->orderBy('tbl_requests.datetime_requested', 'desc')
             ->limit(5)
             ->get();
+        
+        // Total inventory (sister inventory - update later)
+        $totalInventory = InventoryItem::count();
         
         return view('users.admin-dashboard', compact(
             'totalRequests',

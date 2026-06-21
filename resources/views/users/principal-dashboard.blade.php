@@ -293,7 +293,7 @@
         color: #27ae60;
     }
 
-    .badge-denied {
+    .badge-disapproved {
         background: rgba(231, 76, 60, 0.12);
         color: #c0392b;
     }
@@ -420,8 +420,8 @@
         <div class="stat-card">
             <div class="stat-card-body">
                 <div class="stat-info">
-                    <h6 style="color: var(--danger);"><i class="fa fa-times-circle me-1"></i> DENIED</h6>
-                    <p class="stat-number" style="color: var(--danger);">{{ $deniedRequests ?? 0 }}</p>
+                    <h6 style="color: var(--danger);"><i class="fa fa-times-circle me-1"></i> DISAPPROVED</h6>
+                    <p class="stat-number" style="color: var(--danger);">{{ $disapprovedRequests ?? 0 }}</p>
                 </div>
                 <div class="stat-icon" style="background: rgba(231, 76, 60, 0.1); color: var(--danger);">
                     <i class="fa fa-ban"></i>
@@ -499,7 +499,7 @@
                                     $status = $request->status ?? 'Pending';
                                     $badgeClass = match($status) {
                                         'Approved' => 'badge-approved',
-                                        'Disapproved' => 'badge-denied',
+                                        'Disapproved' => 'badge-disapproved',
                                         default => 'badge-pending'
                                     };
                                 @endphp

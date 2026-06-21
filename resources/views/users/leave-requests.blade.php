@@ -1,4 +1,4 @@
-@extends(session('admin_id') == 4 ? 'layouts.admin2app' : 'layouts.adminapp')
+@extends(in_array(session('admin_id'), [4, 5, 6, 7]) ? 'layouts.admin2app' : 'layouts.adminapp')
 
 @section('title', 'Leave Requests')
 
@@ -168,6 +168,8 @@
     .badge-pending     { background: rgba(243,156,18,0.12); color: #b7770d; }
     .badge-approved    { background: rgba(46,204,113,0.12); color: #27ae60; }
     .badge-disapproved { background: rgba(231,76,60,0.12); color: #c0392b; }
+    .badge-ap-pending  { background: rgba(52,152,219,0.12); color: #2980b9; }
+    .badge-ap-disapproved { background: rgba(231,76,60,0.12); color: #c0392b; }
 
     /* Action Buttons */
     .action-group {
@@ -223,6 +225,19 @@
         transform: translateY(-1px);
     }
 
+    .btn-disabled {
+        background: #e9ecef;
+        color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .btn-disabled:hover {
+        background: #e9ecef;
+        color: #6c757d;
+        transform: none;
+    }
+
     .alert-modern {
         border-radius: 10px;
         border: none;
@@ -243,6 +258,15 @@
 
     .empty-state { text-align: center; padding: 60px 25px; color: var(--muted); }
     .empty-state i { font-size: 3rem; margin-bottom: 15px; opacity: 0.5; }
+    
+    .ap-badge {
+        font-size: 0.65rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: rgba(52,152,219,0.1);
+        color: #2980b9;
+        margin-left: 4px;
+    }
 </style>
 
 <!-- Page Header -->
@@ -261,20 +285,30 @@
         <i class="fa fa-check-circle me-2"></i>{{ session('success') }}
     </div>
 @endif
+@if(session('error'))
+    <div id="error-alert" class="alert-modern alert alert-danger">
+        <i class="fa fa-exclamation-circle me-2"></i>{{ session('error') }}
+    </div>
+@endif
 
 <!-- Filter Tabs -->
 <div class="filter-tabs">
+    @php
+        $adminId = session('admin_id');
+        $isPrincipal = ($adminId == 4);
+    @endphp
+    
     <a href="{{ route('leave-requests.index') }}" class="filter-btn {{ !isset($status) ? 'active' : '' }}">
-        All <span class="badge" style="background: var(--gold); color: var(--navy); margin-left: 5px;">{{ ($pendingCount ?? 0) + ($approvedCount ?? 0) + ($disapprovedCount ?? 0) }}</span>
+    All <span class="badge" style="background: var(--gold); color: var(--navy); margin-left: 5px;">{{ ($totalPendingCount ?? 0) + ($totalApprovedCount ?? 0) + ($totalDisapprovedCount ?? 0) }}</span>
     </a>
     <a href="{{ route('leave-requests.filter', 'pending') }}" class="filter-btn {{ isset($status) && $status == 'pending' ? 'active' : '' }}">
-        Pending <span class="badge" style="background: var(--warning); color: white; margin-left: 5px;">{{ $pendingCount ?? 0 }}</span>
+        Pending <span class="badge" style="background: var(--warning); color: white; margin-left: 5px;">{{ $totalPendingCount ?? 0 }}</span>
     </a>
     <a href="{{ route('leave-requests.filter', 'approved') }}" class="filter-btn {{ isset($status) && $status == 'approved' ? 'active' : '' }}">
-        Approved <span class="badge" style="background: var(--success); color: white; margin-left: 5px;">{{ $approvedCount ?? 0 }}</span>
+        Approved <span class="badge" style="background: var(--success); color: white; margin-left: 5px;">{{ $totalApprovedCount ?? 0 }}</span>
     </a>
     <a href="{{ route('leave-requests.filter', 'disapproved') }}" class="filter-btn {{ isset($status) && $status == 'disapproved' ? 'active' : '' }}">
-        Disapproved <span class="badge" style="background: var(--danger); color: white; margin-left: 5px;">{{ $disapprovedCount ?? 0 }}</span>
+        Disapproved <span class="badge" style="background: var(--danger); color: white; margin-left: 5px;">{{ $totalDisapprovedCount ?? 0 }}</span>
     </a>
 </div>
 
@@ -313,6 +347,99 @@
                             $fullName = trim($request->first_name . ' ' . 
                                             ($request->middle_name ? substr($request->middle_name, 0, 1) . '. ' : '') . 
                                             $request->last_name);
+                            
+                            // Determine if this is a teaching department (2-stage approval)
+                            $isTeachingDept = in_array($request->department_description, [
+                                'Academic Teaching - Grade School',
+                                'Academic Teaching - Junior High School',
+                                'Academic Teaching - Senior High School'
+                            ]);
+                            
+                            // Determine actionability
+                            $isActionable = false;
+                            $actionMessage = '';
+                            
+                            switch($adminId) {
+                                case 2: // HR - read-only
+                                    $isActionable = false;
+                                    $actionMessage = 'HR view only';
+                                    break;
+                                case 3: // Sister - Non Academic only
+                                    if ($request->department_description === 'Non Academic' && $request->status === 'Pending') {
+                                        $isActionable = true;
+                                    } else {
+                                        $isActionable = false;
+                                        if ($request->status !== 'Pending') {
+                                            $actionMessage = $request->status; // Shows "Approved" or "Disapproved"
+                                        } else {
+                                            $actionMessage = 'Sister can only approve Non Academic';
+                                        }
+                                    }
+                                    break;
+                                case 4: // Principal
+                                    if ($request->department_description === 'Academic Non-Teaching' && $request->status === 'Pending') {
+                                        $isActionable = true;
+                                    } elseif ($isTeachingDept && $request->ap_status === 'Approved' && $request->principal_status === 'Pending') {
+                                        $isActionable = true;
+                                    } elseif ($isTeachingDept && $request->ap_status === 'Disapproved') {
+                                        $isActionable = false;
+                                        $actionMessage = 'Disapproved by AP';
+                                    } elseif ($isTeachingDept && ($request->ap_status === null || $request->ap_status === 'Pending')) {
+                                        $isActionable = false;
+                                        $actionMessage = 'Waiting for AP';
+                                    } else {
+                                        $isActionable = false;
+                                        // Show the actual status for approved/disapproved requests
+                                        if ($request->status === 'Approved') {
+                                            $actionMessage = 'Approved';
+                                        } elseif ($request->status === 'Disapproved') {
+                                            $actionMessage = 'Disapproved';
+                                        } else {
+                                            $actionMessage = 'Not actionable';
+                                        }
+                                    }
+                                    break;
+                                case 5: // AP GS
+                                case 6: // AP JHS
+                                case 7: // AP SHS
+                                    $apDeptMap = [
+                                        5 => 'Academic Teaching - Grade School',
+                                        6 => 'Academic Teaching - Junior High School',
+                                        7 => 'Academic Teaching - Senior High School'
+                                    ];
+                                    // Check if this is the AP's department and request is pending AP approval
+                                    if ($request->department_description === $apDeptMap[$adminId] && 
+                                        ($request->ap_status === null || $request->ap_status === 'Pending')) {
+                                        $isActionable = true;
+                                    } else {
+                                        $isActionable = false;
+                                        // Show appropriate message based on status
+                                        // CHECK FINAL STATUS FIRST
+                                        if ($request->status === 'Approved') {
+                                            $actionMessage = 'Approved';
+                                        } elseif ($request->status === 'Disapproved') {
+                                            // Check who disapproved it
+                                            if ($request->principal_status === 'Disapproved') {
+                                                $actionMessage = 'Disapproved by Principal';
+                                            } else {
+                                                $actionMessage = 'Disapproved';
+                                            }
+                                        } elseif ($request->ap_status === 'Approved' && $request->principal_status === 'Pending') {
+                                            $actionMessage = 'Waiting for Principal';
+                                        } elseif ($request->ap_status === 'Approved') {
+                                            $actionMessage = 'Approved by AP';
+                                        } elseif ($request->ap_status === 'Disapproved') {
+                                            $actionMessage = 'Disapproved by AP';
+                                        } elseif ($request->department_description !== $apDeptMap[$adminId]) {
+                                            $actionMessage = 'Not your department';
+                                        } else {
+                                            $actionMessage = 'Pending';
+                                        }
+                                    }
+                                    break;
+                                default:
+                                    $isActionable = false;
+                            }
                         @endphp
                         <tr>
                             <td>{{ $request->request_id }}</td>
@@ -323,7 +450,7 @@
                                 <strong>{{ $fullName }}</strong><br>
                                 <small style="color: var(--muted);">ID: {{ $request->employee_idno }}</small>
                             </td>
-                            <td>{{ $request->department ?? 'N/A' }}</td>
+                            <td>{{ $request->department_description ?? $request->department ?? 'N/A' }}</td>
                             <td>{{ $request->request_type }}</td>
                             <td>{{ date('D, M d, Y', strtotime($request->datetime_start)) }}</td>
                             <td>{{ date('D, M d, Y', strtotime($request->datetime_end)) }}</td>
@@ -360,12 +487,27 @@
                                         'Disapproved' => 'badge-disapproved',
                                         default => 'badge-pending'
                                     };
+                                    
+                                    // Show AP status badge for teaching departments
+                                    $showApStatus = $isTeachingDept && in_array($adminId, [2, 4, 5, 6, 7]);
                                 @endphp
+                                
                                 <span class="badge-modern {{ $badgeClass }}">{{ $status }}</span>
+                                
+                                @if($showApStatus && $request->ap_status)
+                                    <br>
+                                    @if($request->ap_status == 'Pending')
+                                        <span class="badge-modern badge-ap-pending" style="font-size: 0.6rem;">AP: Pending</span>
+                                    @elseif($request->ap_status == 'Approved')
+                                        <span class="badge-modern badge-approved" style="font-size: 0.6rem;">AP: Approved</span>
+                                    @elseif($request->ap_status == 'Disapproved')
+                                        <span class="badge-modern badge-ap-disapproved" style="font-size: 0.6rem;">AP: Disapproved</span>
+                                    @endif
+                                @endif
                             </td>
                             <td>
                                 <div class="action-group">
-                                    @if($request->status == 'Pending')
+                                    @if($isActionable)
                                         <form action="{{ route('leave-requests.update-status', $request->request_id) }}" method="POST" style="display: inline;">
                                             @csrf
                                             @method('PATCH')
@@ -383,9 +525,15 @@
                                             </button>
                                         </form>
                                     @else
-                                        <button class="btn-action btn-view" disabled style="opacity: 0.5; cursor: not-allowed;">
-                                            <i class="fa fa-lock"></i> {{ $status }}
-                                        </button>
+                                        @if($actionMessage)
+                                            <button class="btn-action btn-disabled" disabled>
+                                                <i class="fa fa-lock"></i> {{ $actionMessage }}
+                                            </button>
+                                        @else
+                                            <button class="btn-action btn-view" disabled style="opacity: 0.5; cursor: not-allowed;">
+                                                <i class="fa fa-lock"></i> {{ $status }}
+                                            </button>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
@@ -402,6 +550,7 @@
         @endif
     </div>
 </div>
+
 <!-- Attachments Modal -->
 <div class="modal fade" id="attachmentsModal" tabindex="-1" aria-labelledby="attachmentsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -421,6 +570,7 @@
         </div>
     </div>
 </div>
+
 <script>
     setTimeout(() => {
         const el = document.getElementById('success-alert');
@@ -430,16 +580,15 @@
             setTimeout(() => el.remove(), 500);
         }
     }, 3000);
-</script>
-<script>
+    
     setTimeout(() => {
-        const el = document.getElementById('success-alert');
+        const el = document.getElementById('error-alert');
         if (el) {
             el.style.transition = 'opacity 0.5s ease';
             el.style.opacity = '0';
             setTimeout(() => el.remove(), 500);
         }
-    }, 3000);
+    }, 5000);
     
     // Function to view attachments
     function viewAttachments(requestId) {

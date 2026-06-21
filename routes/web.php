@@ -92,7 +92,13 @@ Route::get('/admin-leave-requests/filter/{status}', [App\Http\Controllers\LeaveR
     ->name('leave-requests.filter');
 Route::patch('/admin-leave-requests/{id}/status', [App\Http\Controllers\LeaveRequestsController::class, 'updateStatus'])
     ->name('leave-requests.update-status');
-
+// Assistant Principal Dashboard (for admin_id 5, 6, 7)
+Route::get('/ap-dashboard', function () {
+    if (!session('logged_in') || !in_array(session('admin_id'), [5, 6, 7])) {
+        return redirect('/login');
+    }
+    return redirect('/admin-leave-requests');
+})->name('ap-dashboard');
 
     
 // Route::get('/viewbookings', [PublicViewingController::class, 'viewBookings'])->name('view.bookings');
