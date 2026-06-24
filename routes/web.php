@@ -85,13 +85,40 @@ Route::get('/admin-dashboard2', function () {
     return app(\App\Http\Controllers\AdminDashboard2Controller::class)->index();
 })->name('admin-dashboard2');
 
-// Leave Requests Routes (accessible by both Sister and Principal)
-Route::get('/admin-leave-requests', [App\Http\Controllers\LeaveRequestsController::class, 'index'])
-    ->name('leave-requests.index');
-Route::get('/admin-leave-requests/filter/{status}', [App\Http\Controllers\LeaveRequestsController::class, 'filterByStatus'])
-    ->name('leave-requests.filter');
-Route::patch('/admin-leave-requests/{id}/status', [App\Http\Controllers\LeaveRequestsController::class, 'updateStatus'])
-    ->name('leave-requests.update-status');
+// Leave Requests Routes (accessible by both Sister and Principal/Assistant Principal)
+Route::get('/admin-leave-requests', function () {
+    if (!session('logged_in') || !in_array(session('admin_id'), [2, 3, 4, 5, 6, 7])) {
+        return redirect('/login');
+    }
+    return app(\App\Http\Controllers\LeaveRequestsController::class)->index();
+})->name('leave-requests.index');
+
+Route::get('/admin-leave-requests/filter/{status}', function ($status) {
+    if (!session('logged_in') || !in_array(session('admin_id'), [2, 3, 4, 5, 6, 7])) {
+        return redirect('/login');
+    }
+    return app(\App\Http\Controllers\LeaveRequestsController::class)->filterByStatus($status);
+})->name('leave-requests.filter');
+
+Route::patch('/admin-leave-requests/{id}/status', function ($id) {
+    if (!session('logged_in') || !in_array(session('admin_id'), [2, 3, 4, 5, 6, 7])) {
+        return redirect('/login');
+    }
+    return app(\App\Http\Controllers\LeaveRequestsController::class)->updateStatus(request(), $id);
+})->name('leave-requests.update-status');
+
+// Sister Inventory Routes (public no login required - URL is confidential)
+Route::get('/admin-inventory', [App\Http\Controllers\AdminInventoryController::class, 'index'])
+    ->name('admin.inventory');
+Route::post('/admin-inventory', [App\Http\Controllers\AdminInventoryController::class, 'store'])
+    ->name('admin.inventory.store');
+Route::put('/admin-inventory/{admininventory}', [App\Http\Controllers\AdminInventoryController::class, 'update'])
+    ->name('admin.inventory.update');
+Route::delete('/admin-inventory/{admininventory}', [App\Http\Controllers\AdminInventoryController::class, 'destroy'])
+    ->name('admin.inventory.destroy');
+Route::get('/admin-inventory/export', [App\Http\Controllers\AdminInventoryController::class, 'export'])
+    ->name('admin.inventory.export');
+
 // Assistant Principal Dashboard (for admin_id 5, 6, 7)
 Route::get('/ap-dashboard', function () {
     if (!session('logged_in') || !in_array(session('admin_id'), [5, 6, 7])) {
