@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\InventoryItem;
+use App\Models\SisterInventory;
 
 class AdminDashboardController extends Controller
 {
@@ -39,8 +39,8 @@ class AdminDashboardController extends Controller
             ->limit(5)
             ->get();
         
-        // Total inventory (sister inventory - update later)
-        $totalInventory = InventoryItem::count();
+        // Total inventory (sister inventory)
+        $totalInventory = SisterInventory::count();
         
         return view('users.admin-dashboard', compact(
             'totalRequests',
