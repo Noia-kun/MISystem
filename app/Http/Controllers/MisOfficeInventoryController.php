@@ -19,6 +19,7 @@ class MisOfficeInventoryController extends Controller
             ->when($search, function($query) use ($search) {
                 $query->where('item_name', 'LIKE', "%{$search}%")
                     ->orWhere('propertynum', 'LIKE', "%{$search}%")
+                    ->orWhere('serialnum', 'LIKE', "%{$search}%")
                     ->orWhere('item_set', 'LIKE', "%{$search}%");
             })
             ->orderBy('created_at', 'desc')
@@ -46,6 +47,7 @@ class MisOfficeInventoryController extends Controller
         $validated = $request->validate([
             'item_name' => 'required|string|max:255',
             'propertynum' => 'required|string|max:255',
+            'serialnum' => 'nullable|string|max:255',
             'category' => 'required|string|max:255',
             'item_set' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
@@ -113,6 +115,7 @@ class MisOfficeInventoryController extends Controller
         $validated = $request->validate([
             'item_name' => 'required|string|max:255',
             'propertynum' => 'required|string|max:255',
+            'serialnum' => 'nullable|string|max:255',
             'category' => 'required|string|max:255',
             'item_set' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
@@ -200,7 +203,7 @@ class MisOfficeInventoryController extends Controller
         ];
 
         $columns = [
-            'Item Name', 'Property No.', 'Category', 'Item Set', 'Location',
+            'Item Name', 'Property No.', 'Serial No.', 'Category', 'Item Set', 'Location',
             'Description', 'Condition', 'Date Purchased'
         ];
 
@@ -212,6 +215,7 @@ class MisOfficeInventoryController extends Controller
                 fputcsv($file, [
                     $item->item_name,
                     $item->propertynum,
+                    $item->serialnum ?? '',
                     $item->category,
                     $item->item_set ?? 'N/A',
                     $item->location ?? '-',
