@@ -312,6 +312,7 @@
                         <tr>
                             <th>Item Name</th>
                             <th>Property No.</th>
+                            <th>Serial No.</th>
                             <th>Category</th>
                             <th>Item Set</th>
                             <th>Location</th>
@@ -326,6 +327,7 @@
                             <tr>
                                 <td>{{ $item->item_name }}</td>
                                 <td>{{ $item->propertynum }}</td>
+                                <td>{{ $item->serialnum ?? '-' }}</td>
                                 <td>{{ $item->category }}</td>
                                 <td>{{ $item->item_set ?? 'N/A' }}</td>
                                 <td>{{ $item->location ?? '-' }}</td>
@@ -395,6 +397,9 @@
                     <div class="mb-3">
                         <label class="form-label">Property No.</label>
                         <input type="text" name="propertynum" value="{{ $item->propertynum }}" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Serial No. (Optional)</label> <input type="text" name="serialnum" value="{{ $item->serialnum }}" class="form-control">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Category</label>
@@ -519,6 +524,9 @@
                     <div class="mb-3">
                         <label class="form-label">Property No.</label>
                         <input type="text" name="propertynum" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Serial No. (Optional)</label>  <input type="text" name="serialnum" value="{{ $item->serialnum }}" class="form-control">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Category</label>

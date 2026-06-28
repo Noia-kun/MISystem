@@ -11,6 +11,7 @@ class MisOfficeInventory extends Model
     protected $fillable = [
         'item_name',
         'propertynum',
+        'serialnum',
         'category',
         'item_set',
         'location',
