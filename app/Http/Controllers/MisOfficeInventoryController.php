@@ -176,7 +176,7 @@ class MisOfficeInventoryController extends Controller
             ]);
         }
 
-        return redirect()->route('officeinventory')
+        return redirect()->route('officeinventory', ['page' => $request->input('page', 1)])
                          ->with('success', 'Inventory item updated successfully.');
     }
 

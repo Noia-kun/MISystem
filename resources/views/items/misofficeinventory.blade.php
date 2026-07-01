@@ -385,6 +385,9 @@
         <div class="modal-content">
             <form action="{{ route('officeitems.update', $item->id) }}" method="POST">
                 @csrf @method('PUT')
+                
+                <input type="hidden" name="page" value="{{ request('page', 1) }}">
+
                 <div class="modal-header navy">
                     <h5 class="modal-title"><i class="fa fa-pen me-2"></i>Edit Item</h5>
                     <button type="button" class="btn-close light" data-bs-dismiss="modal"></button>
