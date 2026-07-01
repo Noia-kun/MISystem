@@ -94,7 +94,18 @@ class LeaveRequestsController extends Controller
             ->table('tbl_requests')
             ->leftJoin('tbl_employee', 'tbl_requests.employee_idno', '=', 'tbl_employee.employee_idno')
             ->leftJoin('tbl_department', 'tbl_employee.department', '=', 'tbl_department.department_name')
-            ->select('tbl_requests.*', 'tbl_department.description as department_description')
+            ->select(
+                'tbl_requests.*', 
+                'tbl_department.description as department_description',
+                'tbl_employee.sick_leave',
+                'tbl_employee.vacation_leave',
+                'tbl_employee.emergency_leave',
+                'tbl_employee.paternal_leave',
+                'tbl_employee.maternal_leave',
+                'tbl_employee.magna_carta_leave',
+                'tbl_employee.solo_parent_leave',
+                'tbl_employee.study_leave'
+            )
             ->where('tbl_requests.request_id', $id)
             ->first();
         
@@ -103,6 +114,7 @@ class LeaveRequestsController extends Controller
         }
         
         $departmentDesc = $requestData->department_description;
+        $oldStatus = $requestData->status; // Store old status before updating
         $updateData = ['datetime_status_changed' => now()];
         
         // Determine if this is a teaching department (2-stage approval)
@@ -184,15 +196,72 @@ class LeaveRequestsController extends Controller
             default:
                 return redirect()->back()->with('error', 'Unauthorized action');
         }
-        
+        // Execute the update
         DB::connection('dtr')
             ->table('tbl_requests')
             ->where('request_id', $id)
             ->update($updateData);
         
+        // =============================================
+        // 🆕 LEAVE DEDUCTION LOGIC (after successful update)
+        // Only trigger when final status becomes 'Approved'
+        // =============================================
+        
+        // Determine what the final status is after the update
+        $finalStatus = $updateData['status'] ?? $requestData->status;
+        
+        if ($finalStatus === 'Approved' && $oldStatus !== 'Approved') {
+            $this->deductLeaveBalance($requestData, $id);
+        }
+
         return redirect()->back()->with('success', 'Request has been ' . strtolower($newStatus) . '!');
     }
+/**
+ * Deduct leave balance from employee when request is approved
+ */
+private function deductLeaveBalance($requestData, $requestId)
+{
+    // Leave type to column mapping
+    $leaveColumnMap = [
+        'Sick Leave' => 'sick_leave',
+        'Vacation Leave' => 'vacation_leave',
+        'Emergency Leave' => 'emergency_leave',
+        'Paternal Leave' => 'paternal_leave',
+        'Maternal Leave' => 'maternal_leave',
+        'Magna Carta for Women Leave' => 'magna_carta_leave',
+        'Solo Parent Leave' => 'solo_parent_leave',
+        'Study Leave' => 'study_leave',
+    ];
     
+    $requestType = $requestData->request_type;
+    
+    // Skip if not a recognized leave type
+    if (!isset($leaveColumnMap[$requestType])) {
+        return;
+    }
+    
+    $leaveColumn = $leaveColumnMap[$requestType];
+    $employeeIdno = $requestData->employee_idno;
+    
+    // Calculate leave days
+    $startDate = new \DateTime($requestData->datetime_start);
+    $endDate = new \DateTime($requestData->datetime_end);
+    
+    // Calculate days difference (inclusive)
+    $interval = $startDate->diff($endDate);
+    $leaveDays = $interval->days + 1;
+    
+    // Adjust for Half Day
+    if (isset($requestData->request_day_type) && $requestData->request_day_type === 'Half Day') {
+        $leaveDays -= 0.5;
+    }
+    
+    // Deduct from employee's leave balance
+    DB::connection('dtr')
+        ->table('tbl_employee')
+        ->where('employee_idno', $employeeIdno)
+        ->decrement($leaveColumn, $leaveDays);
+}
     public function filterByStatus($status)
     {
         $adminId = session('admin_id');
