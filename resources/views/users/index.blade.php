@@ -166,6 +166,57 @@
     .table-scroll::-webkit-scrollbar { width: 5px; }
     .table-scroll::-webkit-scrollbar-track { background: #f0f4f8; }
     .table-scroll::-webkit-scrollbar-thumb { background: #c9a84c55; border-radius: 10px; }
+
+    /* Stats Cards */
+    .stats-row {
+        margin-bottom: 20px;
+    }
+
+    .stat-card {
+        border: none;
+        border-radius: 14px;
+        box-shadow: 0 3px 15px rgba(10,22,40,0.07);
+        transition: transform 0.2s, box-shadow 0.2s;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 22px rgba(10,22,40,0.11);
+    }
+
+    .stat-card-body {
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .stat-info h6 {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .stat-number {
+        font-family: 'DM Serif Display', serif;
+        font-size: 1.9rem;
+        font-weight: 600;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+    }
 </style>
 
 <!-- Page Header -->
@@ -177,7 +228,68 @@
         <p class="page-header-sub">View and manage your pending requests</p>
     </div>
 </div>
+<!-- Stats Cards Row -->
+<div class="row stats-row">
+    <!-- Total Requests -->
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-card-body">
+                <div class="stat-info">
+                    <h6 style="color: var(--muted);"><i class="fa fa-file-alt me-1"></i> TOTAL REQUESTS</h6>
+                    <p class="stat-number" style="color: var(--navy);">{{ $totalRequests ?? 0 }}</p>
+                </div>
+                <div class="stat-icon" style="background: rgba(17,34,64,0.08); color: var(--navy-mid);">
+                    <i class="fa fa-folder-open"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Pending -->
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-card-body">
+                <div class="stat-info">
+                    <h6 style="color: var(--warning);"><i class="fa fa-clock me-1"></i> PENDING</h6>
+                    <p class="stat-number" style="color: var(--warning);">{{ $pendingRequestsCount ?? 0 }}</p>
+                </div>
+                <div class="stat-icon" style="background: rgba(243,156,18,0.1); color: var(--warning);">
+                    <i class="fa fa-hourglass-half"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approved -->
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-card-body">
+                <div class="stat-info">
+                    <h6 style="color: var(--success);"><i class="fa fa-check-circle me-1"></i> APPROVED</h6>
+                    <p class="stat-number" style="color: var(--success);">{{ $approvedRequestsCount ?? 0 }}</p>
+                </div>
+                <div class="stat-icon" style="background: rgba(46,204,113,0.1); color: var(--success);">
+                    <i class="fa fa-thumbs-up"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Disapproved -->
+    <div class="col-xl-3 col-md-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-card-body">
+                <div class="stat-info">
+                    <h6 style="color: var(--danger);"><i class="fa fa-times-circle me-1"></i> DISAPPROVED</h6>
+                    <p class="stat-number" style="color: var(--danger);">{{ $disapprovedRequestsCount ?? 0 }}</p>
+                </div>
+                <div class="stat-icon" style="background: rgba(231,76,60,0.1); color: var(--danger);">
+                    <i class="fa fa-ban"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {{-- Alerts --}}
 @if(session('success'))
     <div id="success-alert" class="alert-modern alert alert-success">

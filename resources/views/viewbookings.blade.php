@@ -172,6 +172,7 @@
         border-color: var(--gold);
         box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
     }
+
     /* Status badge */
     .status-badge {
         padding: 4px 10px;
@@ -210,6 +211,108 @@
     /* Empty state */
     .empty-state { text-align: center; padding: 30px; color: var(--muted); font-size: 0.9rem; }
 
+    /* Multi-select dropdown */
+    .dropdown-multiselect {
+        position: relative;
+    }
+
+    .dropdown-multiselect .dropdown-toggle {
+        width: 100%;
+        text-align: left;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        color: #2d3748;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .dropdown-multiselect .dropdown-toggle::after {
+        float: right;
+        margin-top: 8px;
+    }
+
+    .dropdown-multiselect .dropdown-menu {
+        width: 100%;
+        max-height: 250px;
+        overflow-y: auto;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
+
+    .dropdown-multiselect .dropdown-menu .form-check {
+        padding: 8px 12px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        padding-left: 30px;
+    }
+
+    .dropdown-multiselect .dropdown-menu .form-check:hover {
+        background: #f7fafc;
+        border-radius: 4px;
+    }
+
+    .dropdown-multiselect .dropdown-menu .form-check-input {
+        margin-right: 10px;
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        margin-left: -20px;
+    }
+
+    .dropdown-multiselect .dropdown-menu .form-check-label {
+        font-weight: 400;
+        font-size: 0.9rem;
+        cursor: pointer;
+        white-space: normal;
+        word-break: break-word;
+        flex: 1;
+        padding-left: 5px;
+    }
+
+    .dropdown-multiselect .selected-count {
+        background: var(--gold);
+        color: var(--navy);
+        border-radius: 20px;
+        padding: 0 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .dropdown-multiselect .select-all-btn {
+        font-size: 0.8rem;
+        padding: 2px 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        background: #f8f9fa;
+        cursor: pointer;
+    }
+
+    .dropdown-multiselect .select-all-btn:hover {
+        background: var(--gold-light);
+    }
+
+    .dropdown-multiselect .dropdown-menu::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    .dropdown-multiselect .dropdown-menu::-webkit-scrollbar-track {
+        background: #f0f4f8;
+        border-radius: 10px;
+    }
+
+    .dropdown-multiselect .dropdown-menu::-webkit-scrollbar-thumb {
+        background: var(--gold);
+        border-radius: 10px;
+    }
 </style>
 
 <!-- Page Header -->
@@ -374,15 +477,36 @@
                             <input type="date" name="scheduled_at" id="scheduled_at" class="form-control" required>
                         </div>
                         <div class="mb-3">
-                            <label for="room_name" class="form-label">Select Room</label>
-                            <select name="room_name" id="room_name" class="form-select" required>
-                                <option value="">-- Choose a room --</option>
-                                @foreach($rooms as $room)
-                                    <option value="{{ $room->room_name }}" data-original-text="{{ $room->room_name }} - {{ $room->room_location }}" {{ $room->status === 'Unavailable' ? 'disabled' : '' }}>
-                                        {{ $room->room_name }} - {{ $room->room_location }} {{ $room->status === 'Unavailable' ? '(Unavailable)' : '' }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label class="form-label">Select Room(s) <span class="text-danger">*</span></label>
+                            <div class="dropdown-multiselect">
+                                <div class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="roomDropdown">
+                                    <span id="selectedRoomsText">-- Select rooms --</span>
+                                    <span class="selected-count" id="selectedCount">0</span>
+                                </div>
+                                <div class="dropdown-menu" aria-labelledby="roomDropdown">
+                                    <div class="mb-2 d-flex justify-content-between align-items-center">
+                                        <span class="text-muted" style="font-size:0.8rem;">Select rooms</span>
+                                        <button type="button" class="select-all-btn" id="selectAllRooms">Select All</button>
+                                    </div>
+                                    <div id="roomCheckboxes">
+                                        @foreach($rooms as $room)
+                                            <div class="form-check">
+                                                <input type="checkbox" 
+                                                    name="room_name[]" 
+                                                    class="form-check-input room-checkbox" 
+                                                    value="{{ $room->room_name }}" 
+                                                    id="room_{{ $loop->index }}"
+                                                    data-room="{{ $room->room_name }}">
+                                                <label class="form-check-label" for="room_{{ $loop->index }}">
+                                                    {{ $room->room_name }} - {{ $room->room_location }}
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="text-muted">Select one or more rooms for your booking.</small>
+                            <div id="conflictWarning" class="mt-2"></div>
                         </div>
                         <div class="mb-3">
                             <label for="requester_name" class="form-label">Booked By</label>
@@ -436,34 +560,130 @@
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-    $('#time_from, #time_to, #scheduled_at').on('change', function() {
-        const time_from    = $('#time_from').val();
-        const time_to      = $('#time_to').val();
-        const scheduled_at = $('#scheduled_at').val();
-
-        // Only fire if all 3 are filled
-        if (!time_from || !time_to || !scheduled_at) return;
-
-        $.ajax({
-            url: '{{ route("public.check.rooms") }}',
-            type: 'GET',
-            data: { time_from, time_to, scheduled_at },
-            success: function(unavailable) {
-                $('#room_name option').each(function() {
-                    const val  = $(this).val();
-                    const text = $(this).data('original-text') || $(this).text();
-
-                    // Save original text first time
-                    $(this).data('original-text', text);
-
-                    if (unavailable.includes(val)) {
-                        $(this).prop('disabled', true).text(text + ' (Unavailable)');
-                    } else {
-                        $(this).prop('disabled', false).text(text);
-                    }
+        $(document).ready(function() {
+            // ============================================
+            // 1. MULTI-SELECT DROPDOWN FUNCTIONALITY
+            // ============================================
+            
+            // Update dropdown text when checkboxes change
+            function updateDropdownText() {
+                var selected = [];
+                $('.room-checkbox:checked').each(function() {
+                    var label = $(this).closest('.form-check').find('.form-check-label').text().trim();
+                    selected.push(label);
                 });
+                
+                var count = selected.length;
+                $('#selectedCount').text(count);
+                
+                if (count === 0) {
+                    $('#selectedRoomsText').text('-- Select rooms --');
+                } else if (count <= 2) {
+                    $('#selectedRoomsText').text(selected.join(', '));
+                } else {
+                    $('#selectedRoomsText').text(selected.slice(0, 2).join(', ') + ' + ' + (count - 2) + ' more');
+                }
+                
+                // Trigger conflict check
+                $('#time_from, #time_to, #scheduled_at').trigger('change');
             }
+            
+            // Select All functionality
+            $('#selectAllRooms').on('click', function(e) {
+                e.stopPropagation();
+                var allChecked = $('.room-checkbox:checked').length === $('.room-checkbox').length;
+                $('.room-checkbox').prop('checked', !allChecked);
+                updateDropdownText();
+            });
+            
+            // Individual checkbox change
+            $(document).on('change', '.room-checkbox', function() {
+                updateDropdownText();
+            });
+            
+            // Initial update
+            updateDropdownText();
+            
+            // ============================================
+            // 2. CONFLICT CHECK FOR MULTIPLE ROOMS
+            // ============================================
+            
+            $('.room-checkbox, #time_from, #time_to, #scheduled_at').on('change input', function() {
+                var selectedRooms = [];
+                $('.room-checkbox:checked').each(function() {
+                    selectedRooms.push($(this).val());
+                });
+                
+                var timeFrom = $('#time_from').val();
+                var timeTo = $('#time_to').val();
+                var scheduledAt = $('#scheduled_at').val();
+                
+                // Only check if at least one room is selected and all fields are filled
+                if (selectedRooms.length > 0 && timeFrom && timeTo && scheduledAt) {
+                    $.ajax({
+                        url: '{{ route("public.check.rooms") }}',
+                        type: 'GET',
+                        data: {
+                            room_name: selectedRooms,
+                            time_from: timeFrom,
+                            time_to: timeTo,
+                            scheduled_at: scheduledAt
+                        },
+                        success: function(unavailable) {
+                            if (unavailable && unavailable.length > 0) {
+                                var message = '⚠️ The following rooms are already booked: ' + unavailable.join(', ');
+                                $('#conflictWarning').html('<div class="alert alert-warning">' + message + '</div>');
+                                $('#submitBtn').prop('disabled', true);
+                            } else {
+                                $('#conflictWarning').html('<div class="alert alert-success">✅ All selected rooms are available!</div>');
+                                $('#submitBtn').prop('disabled', false);
+                            }
+                        },
+                        error: function() {
+                            $('#conflictWarning').html('<div class="alert alert-danger">Error checking room availability.</div>');
+                        }
+                    });
+                } else {
+                    $('#conflictWarning').html('');
+                    $('#submitBtn').prop('disabled', false);
+                }
+            });
+            
+            // ============================================
+            // 3. FORM VALIDATION - Ensure at least one room is selected
+            // ============================================
+            
+            $('form').on('submit', function(e) {
+                var selectedRooms = $('.room-checkbox:checked');
+                if (selectedRooms.length === 0) {
+                    e.preventDefault();
+                    alert('Please select at least one room.');
+                    return false;
+                }
+            });
+            
+            // ============================================
+            // 4. Close dropdown when clicking outside
+            // ============================================
+            
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.dropdown-multiselect').length) {
+                    $('.dropdown-multiselect .dropdown-menu').removeClass('show');
+                }
+            });
         });
-    });
+
+        // ============================================
+        // 5. AUTO-HIDE SUCCESS ALERT
+        // ============================================
+        
+        setTimeout(function() {
+            let alert = document.getElementById('success-alert');
+            if (alert) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            }
+        }, 2000);
     </script>
 @endsection

@@ -31,52 +31,70 @@ class RoomSchedulerController extends Controller
     }
     public function store(Request $request)
     {
-        // $request->validate([
-        //     'room_name' => 'required|string|max:255',
-        //     'requester_name' => 'required|string|max:255',
-        //     'purpose' => 'required|string|max:255',
-        //     'scheduled_at' => 'required|date',
-        //     'time_from' => 'required|date_format:H:i',
-        //     'time_to' => 'required|date_format:H:i',
-        //     'level' => 'required|string|max:255',
-        //     'department' => 'required|string|max:255',
-        // ]);
-
-        // Check for conflicts (Approved or Pending)
-        $conflict = RequestLog::where('request_type', 'Room Scheduling')
-            ->where('location', $request->room_name)
-            ->where('borrowed_at', $request->scheduled_at)
-            ->whereIn('status', ['Pending', 'Approved'])
-            ->where(function ($query) use ($request) {
-                $query->whereBetween('time_from', [$request->time_from, $request->time_to])
-                    ->orWhereBetween('time_to', [$request->time_from, $request->time_to])
-                    ->orWhere(function ($query2) use ($request) {
-                        $query2->where('time_from', '<=', $request->time_from)
-                                ->where('time_to', '>=', $request->time_to);
-                    });
-            })
-            ->exists();
-
-        if ($conflict) {
-            return redirect()->back()->withErrors(['conflict' => '⚠️ The room selected is already requested for the selected date and time.'])->withInput();
-        }
-        RequestLog::create([
-            'request_type' => 'Room Scheduling',
-            'item_name' => 'Room',
-            'inventory_item_id' => null,
-            'requester_name' => $request->requester_name,
-            'location' => $request->room_name,
-            'reason' => $request->purpose,
-            'material' => $request->material,
-            'borrowed_at' => $request->scheduled_at,
-            'time_from' => $request->time_from,
-            'time_to' => $request->time_to,
-            'level' => $request->level,
-            'department' => $request->department,
-            'status' => 'Pending',
+        // Validate that room_name is an array
+        $request->validate([
+            'room_name' => 'required|array',
+            'room_name.*' => 'string',
+            'scheduled_at' => 'required|date',
+            'time_from' => 'required',
+            'time_to' => 'required',
+            'purpose' => 'required|string|max:255',
+            'material' => 'nullable|string',
+            'requester_name' => 'required|string|max:255',
+            'department' => 'required|string|max:255',
+            'level' => 'required|string|max:255',
         ]);
-        
-        return redirect()->route('roomscheduler.index')->with('success', 'Room scheduled successfully!');
+
+        $unavailableRooms = [];
+
+        // Check conflicts for each selected room
+        foreach ($request->room_name as $room) {
+            $conflict = RequestLog::where('request_type', 'Room Scheduling')
+                ->where('location', $room)
+                ->where('borrowed_at', $request->scheduled_at)
+                ->whereIn('status', ['Pending', 'Approved'])
+                ->where(function ($query) use ($request) {
+                    $query->whereBetween('time_from', [$request->time_from, $request->time_to])
+                        ->orWhereBetween('time_to', [$request->time_from, $request->time_to])
+                        ->orWhere(function ($query2) use ($request) {
+                            $query2->where('time_from', '<=', $request->time_from)
+                                ->where('time_to', '>=', $request->time_to);
+                        });
+                })
+                ->exists();
+
+            if ($conflict) {
+                $unavailableRooms[] = $room;
+            }
+        }
+
+        // If any rooms are unavailable, return with error
+        if (!empty($unavailableRooms)) {
+            return redirect()->back()
+                ->withErrors(['conflict' => '⚠️ The following rooms are already booked: ' . implode(', ', $unavailableRooms)])
+                ->withInput();
+        }
+
+        // Create a booking for each selected room
+        foreach ($request->room_name as $room) {
+            RequestLog::create([
+                'request_type' => 'Room Scheduling',
+                'item_name' => 'Room',
+                'inventory_item_id' => null,
+                'requester_name' => $request->requester_name,
+                'location' => $room,
+                'reason' => $request->purpose,
+                'material' => $request->material,
+                'borrowed_at' => $request->scheduled_at,
+                'time_from' => $request->time_from,
+                'time_to' => $request->time_to,
+                'level' => $request->level,
+                'department' => $request->department,
+                'status' => 'Pending',
+            ]);
+        }
+
+        return redirect()->route('roomscheduler.index')->with('success', 'Room schedule(s) created successfully!');
     }
     public function manageroom()
     {
@@ -117,45 +135,70 @@ class RoomSchedulerController extends Controller
 
     public function userStore(Request $request)
     {
-        // Check for conflicts (Approved or Pending)
-        $conflict = RequestLog::where('request_type', 'Room Scheduling')
-            ->where('location', $request->room_name)
-            ->where('borrowed_at', $request->scheduled_at)
-            ->whereIn('status', ['Pending', 'Approved'])
-            ->where(function ($query) use ($request) {
-                $query->whereBetween('time_from', [$request->time_from, $request->time_to])
-                    ->orWhereBetween('time_to', [$request->time_from, $request->time_to])
-                    ->orWhere(function ($query2) use ($request) {
-                        $query2->where('time_from', '<=', $request->time_from)
-                            ->where('time_to', '>=', $request->time_to);
-                    });
-            })
-            ->exists();
+        // Validate that room_name is an array
+        $request->validate([
+            'room_name' => 'required|array',
+            'room_name.*' => 'string',
+            'scheduled_at' => 'required|date',
+            'time_from' => 'required',
+            'time_to' => 'required',
+            'purpose' => 'required|string|max:255',
+            'material' => 'nullable|string',
+            'requester_name' => 'required|string|max:255',
+            'department' => 'required|string|max:255',
+            'level' => 'required|string|max:255',
+        ]);
 
-        if ($conflict) {
+        $unavailableRooms = [];
+
+        // Check conflicts for each selected room
+        foreach ($request->room_name as $room) {
+            $conflict = RequestLog::where('request_type', 'Room Scheduling')
+                ->where('location', $room)
+                ->where('borrowed_at', $request->scheduled_at)
+                ->whereIn('status', ['Pending', 'Approved'])
+                ->where(function ($query) use ($request) {
+                    $query->whereBetween('time_from', [$request->time_from, $request->time_to])
+                        ->orWhereBetween('time_to', [$request->time_from, $request->time_to])
+                        ->orWhere(function ($query2) use ($request) {
+                            $query2->where('time_from', '<=', $request->time_from)
+                                ->where('time_to', '>=', $request->time_to);
+                        });
+                })
+                ->exists();
+
+            if ($conflict) {
+                $unavailableRooms[] = $room;
+            }
+        }
+
+        // If any rooms are unavailable, return with error
+        if (!empty($unavailableRooms)) {
             return redirect()->back()
-                ->withErrors(['conflict' => '⚠️ The room selected is already requested for the selected date and time.'])
+                ->withErrors(['conflict' => '⚠️ The following rooms are already booked: ' . implode(', ', $unavailableRooms)])
                 ->withInput();
         }
 
-        RequestLog::create([
-            'request_type' => 'Room Scheduling',
-            'item_name' => 'Room',
-            'inventory_item_id' => null,
-            'requester_name' => $request->requester_name,
-            'location' => $request->room_name,
-            'reason' => $request->purpose,
-            'material' => $request->material,
-            'borrowed_at' => $request->scheduled_at,
-            'time_from' => $request->time_from,
-            'time_to' => $request->time_to,
-            'level' => $request->level,
-            'department' => $request->department,
-            'status' => 'Pending',
-        ]);
+        // Create a booking for each selected room
+        foreach ($request->room_name as $room) {
+            RequestLog::create([
+                'request_type' => 'Room Scheduling',
+                'item_name' => 'Room',
+                'inventory_item_id' => null,
+                'requester_name' => $request->requester_name,
+                'location' => $room,
+                'reason' => $request->purpose,
+                'material' => $request->material,
+                'borrowed_at' => $request->scheduled_at,
+                'time_from' => $request->time_from,
+                'time_to' => $request->time_to,
+                'level' => $request->level,
+                'department' => $request->department,
+                'status' => 'Pending',
+            ]);
+        }
 
-        // ✅ Redirect to the user room scheduler route
-        return redirect()->route('user.roomscheduler')->with('success', 'Room scheduled successfully!');
+        return redirect()->route('user.roomscheduler')->with('success', 'Room schedule(s) created successfully!');
     }
 
 
@@ -188,42 +231,69 @@ class RoomSchedulerController extends Controller
 
     public function publicStore(Request $request)
     {
-        $conflict = RequestLog::where('request_type', 'Room Scheduling')
-            ->where('location', $request->room_name)
-            ->where('borrowed_at', $request->scheduled_at)
-            ->whereIn('status', ['Pending', 'Approved'])
-            ->where(function ($query) use ($request) {
-                $query->whereBetween('time_from', [$request->time_from, $request->time_to])
-                    ->orWhereBetween('time_to', [$request->time_from, $request->time_to])
-                    ->orWhere(function ($query2) use ($request) {
-                        $query2->where('time_from', '<=', $request->time_from)
-                            ->where('time_to', '>=', $request->time_to);
-                    });
-            })
-            ->exists();
+        // Validate that room_name is an array
+        $request->validate([
+            'room_name' => 'required|array',
+            'room_name.*' => 'string',
+            'scheduled_at' => 'required|date',
+            'time_from' => 'required',
+            'time_to' => 'required',
+            'purpose' => 'required|string|max:255',
+            'material' => 'nullable|string',
+            'requester_name' => 'required|string|max:255',
+            'department' => 'required|string|max:255',
+            'level' => 'required|string|max:255',
+        ]);
 
-        if ($conflict) {
+        $unavailableRooms = [];
+
+        // Check conflicts for each selected room
+        foreach ($request->room_name as $room) {
+            $conflict = RequestLog::where('request_type', 'Room Scheduling')
+                ->where('location', $room)
+                ->where('borrowed_at', $request->scheduled_at)
+                ->whereIn('status', ['Pending', 'Approved'])
+                ->where(function ($query) use ($request) {
+                    $query->whereBetween('time_from', [$request->time_from, $request->time_to])
+                        ->orWhereBetween('time_to', [$request->time_from, $request->time_to])
+                        ->orWhere(function ($query2) use ($request) {
+                            $query2->where('time_from', '<=', $request->time_from)
+                                ->where('time_to', '>=', $request->time_to);
+                        });
+                })
+                ->exists();
+
+            if ($conflict) {
+                $unavailableRooms[] = $room;
+            }
+        }
+
+        // If any rooms are unavailable, return with error
+        if (!empty($unavailableRooms)) {
             return redirect()->back()
-                ->withErrors(['conflict' => '⚠️ The room selected is already requested for the selected date and time.'])
+                ->withErrors(['conflict' => '⚠️ The following rooms are already booked: ' . implode(', ', $unavailableRooms)])
                 ->withInput();
         }
 
-        RequestLog::create([
-            'request_type' => 'Room Scheduling',
-            'item_name' => 'Room',
-            'inventory_item_id' => null,
-            'requester_name' => $request->requester_name,
-            'location' => $request->room_name,
-            'reason' => $request->purpose,
-            'material' => $request->material,
-            'borrowed_at' => $request->scheduled_at,
-            'time_from' => $request->time_from,
-            'time_to' => $request->time_to,
-            'level' => $request->level,
-            'department' => $request->department,
-            'status' => 'Pending',
-        ]);
+        // Create a booking for each selected room
+        foreach ($request->room_name as $room) {
+            RequestLog::create([
+                'request_type' => 'Room Scheduling',
+                'item_name' => 'Room',
+                'inventory_item_id' => null,
+                'requester_name' => $request->requester_name,
+                'location' => $room,
+                'reason' => $request->purpose,
+                'material' => $request->material,
+                'borrowed_at' => $request->scheduled_at,
+                'time_from' => $request->time_from,
+                'time_to' => $request->time_to,
+                'level' => $request->level,
+                'department' => $request->department,
+                'status' => 'Pending',
+            ]);
+        }
 
-        return redirect()->route('home')->with('success', 'Room request submitted successfully!');
+        return redirect()->route('home')->with('success', 'Room request(s) submitted successfully!');
     }
 }
