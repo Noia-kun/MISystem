@@ -32,19 +32,34 @@ class PublicviewingController extends Controller
     }
     public function checkRooms(Request $request)
     {
-        $unavailable = RequestLog::where('request_type', 'Room Scheduling')
-            ->where('borrowed_at', $request->scheduled_at)
-            ->whereIn('status', ['Pending', 'Approved'])
-            ->where(function($query) use ($request) {
-                $query->whereBetween('time_from', [$request->time_from, $request->time_to])
-                    ->orWhereBetween('time_to', [$request->time_from, $request->time_to])
-                    ->orWhere(function($q) use ($request) {
-                        $q->where('time_from', '<=', $request->time_from)
-                        ->where('time_to', '>=', $request->time_to);
-                    });
-            })
-            ->pluck('location')
-            ->toArray();
+        $rooms = $request->room_name;
+    
+        // Ensure $rooms is always an array
+        if (!is_array($rooms)) {
+            $rooms = [$rooms];
+        }
+        
+        $unavailable = [];
+
+        foreach ($rooms as $room) {
+            $conflict = RequestLog::where('request_type', 'Room Scheduling')
+                ->where('location', $room)
+                ->where('borrowed_at', $request->scheduled_at)
+                ->whereIn('status', ['Pending', 'Approved'])
+                ->where(function($query) use ($request) {
+                    $query->whereBetween('time_from', [$request->time_from, $request->time_to])
+                        ->orWhereBetween('time_to', [$request->time_from, $request->time_to])
+                        ->orWhere(function($q) use ($request) {
+                            $q->where('time_from', '<=', $request->time_from)
+                            ->where('time_to', '>=', $request->time_to);
+                        });
+                })
+                ->exists();
+
+            if ($conflict) {
+                $unavailable[] = $room;
+            }
+        }
 
         return response()->json($unavailable);
     }
